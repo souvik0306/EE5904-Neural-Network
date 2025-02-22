@@ -1,21 +1,19 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import numpy as np
-
-np.random.seed(59)
 
 # Perceptron learning algorithm function
-def perceptron_learning(X, y, learning_rate, max_epochs=20):
+def perceptron_learning(X, y, learning_rate, max_epochs=20, seed=59):
     """
-    Train a perceptron for a given logic function using specified learning rate.
+    Train a perceptron for a given logic function using a specified learning rate.
     Returns the weight trajectory.
     """
+    np.random.seed(seed)  # Set seed for consistent results
     num_features = X.shape[1]
     w = np.random.randn(num_features)  # Random weight initialization
     b = np.random.randn()  # Random bias initialization
     weight_trajectory = [(w.copy(), b)]  # Store weight updates
 
-    for epoch in range(max_epochs):
+    for _ in range(max_epochs):
         v = np.dot(X, w) + b
         y_pred = np.where(v >= 0, 1, 0)
         errors = y - y_pred
@@ -38,16 +36,29 @@ logic_gates = {
 # Define different learning rates to experiment with
 learning_rates = [0.01, 0.1, 1.0, 5.0]
 
-# Function to plot weight updates for a given gate
-def plot_weight_updates(gate, X, y, learning_rates):
+# Seed value for reproducibility
+seed_value = 34
+
+# Store weight updates for each gate and learning rate
+stored_weight_updates = {}
+
+# Train perceptrons and store weight updates
+for gate, (X, y) in logic_gates.items():
+    stored_weight_updates[gate] = {}
+    for lr in learning_rates:
+        stored_weight_updates[gate][lr] = perceptron_learning(X, y, lr, seed=seed_value)
+
+## Function to plot weight updates for a given gate
+def plot_weight_updates(gate, learning_rates):
     fig, axes = plt.subplots(1, len(learning_rates), figsize=(15, 4))
+
     for col, lr in enumerate(learning_rates):
-        weight_updates = perceptron_learning(X, y, lr)
-        
+        weight_updates = stored_weight_updates[gate][lr]  # Use stored values
+
         # Extract weight trajectory
         epochs = np.arange(len(weight_updates))
-        w1_vals = [w[0][0] if len(w[0]) > 1 else w[0] for w in weight_updates]
-        w2_vals = [w[0][1] if len(w[0]) > 1 else 0 for w in weight_updates]
+        w1_vals = [w[0][0] if isinstance(w[0], np.ndarray) and len(w[0]) > 1 else w[0] for w in weight_updates]
+        w2_vals = [w[0][1] if isinstance(w[0], np.ndarray) and len(w[0]) > 1 else 0 for w in weight_updates]
         b_vals = [w[1] for w in weight_updates]
 
         # Plot weight updates
@@ -65,32 +76,67 @@ def plot_weight_updates(gate, X, y, learning_rates):
     fig.legend(["w1", "w2", "Bias"], loc='upper right', ncol=3)
     fig.suptitle(f"Weight Updates for {gate} Gate")
     plt.tight_layout()
-    plt.savefig(f"images4_{gate}.png", dpi=600)
+    plt.savefig(f"{gate}_weight_updates.png", dpi=600)  # Save the figure
     plt.show()
 
-# Plot weight updates for each gate
-for gate, (X, y) in logic_gates.items():
-    plot_weight_updates(gate, X, y, learning_rates)
+# Plot weight updates using stored values
+for gate in logic_gates.keys():
+    plot_weight_updates(gate, learning_rates)
 
-
-# Define the learning rate to experiment with
-learning_rate = 1.0
-# Function to print weight updates for a given gate
-def print_weight_updates(gate, X, y, learning_rate):
-    weight_updates = perceptron_learning(X, y, learning_rate)
+# Function to print final weight values
+def print_final_weights():
+    print("\nFinal Learned Weights & Bias:")
+    print("Gate\t\tLearning Rate\tw1\t\tw2\t\tBias")
+    print("-" * 60)
     
-    # Extract weight trajectory
-    epochs = np.arange(len(weight_updates))
-    w1_vals = [float(w[0][0]) if isinstance(w[0], np.ndarray) else float(w[0]) for w in weight_updates]
-    w2_vals = [float(w[0][1]) if isinstance(w[0], np.ndarray) and len(w[0]) > 1 else 0 for w in weight_updates]
-    b_vals = [float(w[1]) for w in weight_updates]
+    for gate, lr_dict in stored_weight_updates.items():
+        for lr, weight_updates in lr_dict.items():
+            final_w = weight_updates[-1][0]
+            final_b = weight_updates[-1][1]
+            if isinstance(final_w, np.ndarray) and len(final_w) > 1:
+                w1 = final_w[0].item()  # Convert to scalar
+                w2 = final_w[1].item()  # Convert to scalar
+            else:
+                w1 = final_w.item()  # Convert to scalar
+                w2 = 0
+            print(f"{gate}\t\t{lr:.2f}\t\t{w1:.4f}\t{w2:.4f}\t{final_b:.4f}")
 
-    print(f"Weight updates for {gate} gate with learning rate {learning_rate}:")
-    print("Epoch\tw1\t\tw2\t\tBias")
-    for epoch, (w1, w2, b) in enumerate(zip(w1_vals, w2_vals, b_vals)):
-        print(f"{epoch}\t{w1:.4f}\t{w2:.4f}\t{b:.4f}")
-    print()
+# Print the final weight and bias values
+print_final_weights()
 
-# Print weight updates for each gate
-for gate, (X, y) in logic_gates.items():
-    print_weight_updates(gate, X, y, learning_rate)
+# Function to plot final weights
+def plot_final_weights():
+    fig, axes = plt.subplots(1, 3, figsize=(15, 4))
+
+    for idx, param in enumerate(["w1", "w2", "Bias"]):
+        for gate, lr_dict in stored_weight_updates.items():
+            x_vals = []
+            y_vals = []
+            for lr, weight_updates in lr_dict.items():
+                final_w = weight_updates[-1][0]
+                final_b = weight_updates[-1][1]
+                if param == "w1":
+                    val = final_w[0] if isinstance(final_w, np.ndarray) and len(final_w) > 1 else final_w
+                elif param == "w2":
+                    val = final_w[1] if isinstance(final_w, np.ndarray) and len(final_w) > 1 else 0
+                else:  # Bias
+                    val = final_b
+                
+                x_vals.append(lr)
+                y_vals.append(val)
+
+            axes[idx].plot(x_vals, y_vals, marker='o', label=gate)
+
+        axes[idx].set_title(f"Final {param} Values")
+        axes[idx].set_xlabel("Learning Rate")
+        axes[idx].set_ylabel(param)
+        axes[idx].set_xscale("log")
+        axes[idx].grid(True)
+        axes[idx].legend()
+
+    plt.tight_layout()
+    plt.savefig("final_weights.png")  # Save the figure
+    plt.show()
+
+# Plot final learned weights and bias
+plot_final_weights()
