@@ -1,138 +1,40 @@
-import numpy as np
-import torch
-import torch.nn as nn
-import torch.optim as optim
 import matplotlib.pyplot as plt
 
-# -------------------------------
-# Step 1: Define the Target Function
-# -------------------------------
-def target_function(x):
-    return 1.2 * np.sin(np.pi * x) - np.cos(2.4 * np.pi * x)
-
-# -------------------------------
-# Step 2: Generate Training and Test Data
-# -------------------------------
-x_train = np.arange(-1.6, 1.6 + 0.05, 0.05)
-y_train = target_function(x_train)
-
-x_test = np.arange(-1.6, 1.6 + 0.01, 0.01)
-y_test = target_function(x_test)
-
-# Convert to PyTorch tensors
-x_train_tensor = torch.tensor(x_train, dtype=torch.float32).unsqueeze(1)
-y_train_tensor = torch.tensor(y_train, dtype=torch.float32).unsqueeze(1)
-
-x_test_tensor = torch.tensor(x_test, dtype=torch.float32).unsqueeze(1)
-y_test_tensor = torch.tensor(y_test, dtype=torch.float32).unsqueeze(1)
-
-# -------------------------------
-# Step 3: Define the MLP Model and Training Function
-# -------------------------------
-def train_mlp(n_hidden, optimizer_type="adam", epochs=2000, learning_rate=0.01, regularization=False):
-    model = nn.Sequential(
-        nn.Linear(1, n_hidden),
-        nn.Tanh(),
-        nn.Linear(n_hidden, 1)
-    )
-    
-    criterion = nn.MSELoss()
-    
-    if optimizer_type == "adam":
-        optimizer = optim.Adam(model.parameters(), lr=learning_rate)
-    elif optimizer_type == "lbfgs":
-        optimizer = optim.LBFGS(model.parameters(), lr=learning_rate)
-    elif optimizer_type == "bayesian":
-        optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=0.01 if regularization else 0.0)
-
-    for epoch in range(epochs):
-        def closure():
-            optimizer.zero_grad()
-            y_pred = model(x_train_tensor)
-            loss = criterion(y_pred, y_train_tensor)
-            loss.backward()
-            return loss
-        
-        if optimizer_type == "lbfgs":
-            optimizer.step(closure)
-        else:
-            optimizer.zero_grad()
-            y_pred = model(x_train_tensor)
-            loss = criterion(y_pred, y_train_tensor)
-            loss.backward()
-            optimizer.step()
-
-    # Evaluate on test data
-    y_test_pred = model(x_test_tensor).detach().numpy()
-
-    return model, y_test_pred
-
-# -------------------------------
-# Step 4: Define Hidden Neurons for Experiments
-# -------------------------------
+# Define hidden neurons used in the experiment
 hidden_neurons = [1, 2, 4, 5, 10, 100]
 
-# -------------------------------
-# Step 5: Train and Plot MLP Results for Different Methods
-# -------------------------------
-def train_and_plot(method, optimizer_type, save_filename=None):
-    results = {}
-    plt.figure(figsize=(15, 10))
+# Define values for each method at x = -3 and x = 3
+bp_xneg3 = [0.18919289, 2.1454768, 1.3331243, -1.879192, -3.7878022, -4.571954]
+trainlm_xneg3 = [0.7532759, 1.3004378, 1.4587393, 2.6031017, 3.7843096, -1.1215659]
+trainbr_xneg3 = [0.6105115, 1.5679431, 0.67763, 1.7362639, 4.6818137, 5.0687246]
 
-    for i, n in enumerate(hidden_neurons):
-        model, y_pred = train_mlp(n, optimizer_type=optimizer_type)
-        results[n] = y_pred
+bp_x3 = [-2.8801906, -3.7305717, -2.7517562, -0.71682286, -3.5645664, -4.2341743]
+trainlm_x3 = [-0.7138791, -2.010186, -2.1604395, -0.91965103, -1.0808313, 2.2052255]
+trainbr_x3 = [-0.5151646, 0.14981228, -0.62427133, -1.4997219, -4.6989074, -5.0716743]
 
-        plt.subplot(2, 3, i + 1)
-        plt.plot(x_test, y_test, label="True Function", linestyle="dashed", linewidth=2)
-        plt.plot(x_test, y_pred, label=f"MLP {n}-hidden", alpha=0.8, linewidth=2, color='red')
-        plt.xlabel("x")
-        plt.ylabel("y")
-        plt.title(f"MLP with {n} hidden neurons ({method})")
-        plt.legend()
+# Create subplots for -3 and +3 predictions
+fig, axes = plt.subplots(1, 2, figsize=(12, 5))
 
-    plt.tight_layout()
-    if save_filename:
-        plt.savefig(save_filename, dpi=600)
-    plt.show()
+# Subplot for x = -3
+axes[0].plot(hidden_neurons, bp_xneg3, 'ro-', label="BP (y=-3)")
+axes[0].plot(hidden_neurons, trainlm_xneg3, 'bo-', label="trainlm (y=-3)")
+axes[0].plot(hidden_neurons, trainbr_xneg3, 'go-', label="trainbr (y=-3)")
+axes[0].axhline(y=-3, color='black', linestyle='dashed', linewidth=2, label="True Value (y=-3)")
+axes[0].set_xlabel("Number of Hidden Neurons")
+axes[0].set_ylabel("Prediction at y=-3")
+axes[0].set_title("Out-of-Domain Predictions at y=-3")
+axes[0].legend()
 
-    return results
+# Subplot for x = 3
+axes[1].plot(hidden_neurons, bp_x3, 'r--o', label="BP (y=3)")
+axes[1].plot(hidden_neurons, trainlm_x3, 'b--o', label="trainlm (y=3)")
+axes[1].plot(hidden_neurons, trainbr_x3, 'g--o', label="trainbr (y=3)")
+axes[1].axhline(y=3, color='black', linestyle='dashed', linewidth=2, label="True Value (y=3)")
+axes[1].set_xlabel("Number of Hidden Neurons")
+axes[1].set_ylabel("Prediction at y=3")
+axes[1].set_title("Out-of-Domain Predictions at y=3")
+axes[1].legend()
 
-# Train using Backpropagation (BP)
-# train_and_plot("BP", optimizer_type="adam", save_filename="image5_mlp_bp.png")
-
-# # Train using trainlm (Levenberg-Marquardt)
-# train_and_plot("trainlm", optimizer_type="lbfgs", save_filename="image6_mlp_trainlm.png")
-
-# # Train using trainbr (Bayesian Regularization)
-# train_and_plot("trainbr", optimizer_type="bayesian", save_filename="image7_mlp_trainbr.png")
-
-# -------------------------------
-# Step 6: Evaluate Out-of-Domain Predictions
-# -------------------------------
-x_out_of_domain = torch.tensor([[-3.0], [3.0]], dtype=torch.float32)
-
-out_of_domain_results = {
-    "BP": {},
-    "trainlm": {},
-    "trainbr": {}
-}
-
-for n in hidden_neurons:
-    model, _ = train_mlp(n, optimizer_type="adam")
-    out_of_domain_results["BP"][n] = model(x_out_of_domain).detach().numpy()
-
-    model, _ = train_mlp(n, optimizer_type="lbfgs")
-    out_of_domain_results["trainlm"][n] = model(x_out_of_domain).detach().numpy()
-
-    model, _ = train_mlp(n, optimizer_type="bayesian", regularization=True)
-    out_of_domain_results["trainbr"][n] = model(x_out_of_domain).detach().numpy()
-
-# -------------------------------
-# Step 7: Print Out-of-Domain Predictions
-# -------------------------------
-print("\nOut-of-domain predictions for x = -3 and x = 3:\n")
-for n in hidden_neurons:
-    print(f"MLP {n} hidden neurons - BP: {out_of_domain_results['BP'][n].flatten()}, "
-          f"trainlm: {out_of_domain_results['trainlm'][n].flatten()}, "
-          f"trainbr: {out_of_domain_results['trainbr'][n].flatten()}")
+plt.tight_layout()
+plt.savefig("image8_mlp_out_of_domain.png", dpi=600)
+plt.show()
