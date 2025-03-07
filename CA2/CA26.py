@@ -3,8 +3,12 @@ import numpy as np
 import cv2
 import matplotlib.pyplot as plt
 
-seed = 18615
+# seed = 18615
+# np.random.seed(seed)
+
+seed = np.random.randint(0, 1000)
 np.random.seed(seed)
+print(f"Using seed: {seed}")
 # -------------------------------
 # Step 1: Load and Preprocess the Data
 # -------------------------------
@@ -141,7 +145,7 @@ plt.ylabel("Accuracy (%)")
 plt.title("Training vs Validation Accuracy (Smoothed)")
 plt.legend()
 plt.grid()
-plt.savefig("image10_rosenblatt.png")
+plt.savefig("image9_rosenblatt.png", dpi=600)
 plt.show()
 
 # -------------------------------
