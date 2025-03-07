@@ -3,6 +3,8 @@ import numpy as np
 import cv2
 import matplotlib.pyplot as plt
 
+seed = 18615
+np.random.seed(seed)
 # -------------------------------
 # Step 1: Load and Preprocess the Data
 # -------------------------------
@@ -34,13 +36,15 @@ split_index = int(0.9 * X.shape[0])  # 90% for training, 10% for validation
 X_train, Y_train = X[:split_index], Y[:split_index]
 X_val, Y_val = X[split_index:], Y[split_index:]
 
-# Step 2: Implement Rosenblatt’s Perceptron with Validation
+# -------------------------------
+# Step 2: Implement Perceptron with Early Stopping
 # -------------------------------
 class Perceptron:
-    def __init__(self, input_size, learning_rate=0.01, epochs=50):
+    def __init__(self, input_size, learning_rate=0.01, epochs=500, patience=10):
         self.weights = np.random.randn(input_size + 1) * 0.01  # Including bias
         self.learning_rate = learning_rate
         self.epochs = epochs
+        self.patience = patience  # Early stopping patience
         self.history = {"train_acc": [], "val_acc": []}  # Store accuracy for visualization
 
     def activation(self, x):
@@ -49,6 +53,10 @@ class Perceptron:
     def train(self, X_train, Y_train, X_val, Y_val):
         X_train = np.c_[X_train, np.ones(X_train.shape[0])]  # Add bias term
         X_val = np.c_[X_val, np.ones(X_val.shape[0])]        # Add bias for validation
+
+        best_val_acc = 0  # Track best validation accuracy
+        patience_counter = 0
+        best_weights = self.weights.copy()
 
         for epoch in range(self.epochs):
             # Training Phase
@@ -64,7 +72,20 @@ class Perceptron:
 
             print(f"Epoch {epoch+1}/{self.epochs}: Train Acc = {train_acc:.2f}%, Val Acc = {val_acc:.2f}%")
 
-        # Save the weights after training
+            # Early Stopping Logic
+            if val_acc > best_val_acc:
+                best_val_acc = val_acc
+                best_weights = self.weights.copy()
+                patience_counter = 0  # Reset patience counter
+            else:
+                patience_counter += 1
+
+            if patience_counter >= self.patience:
+                print(f"Early stopping triggered at epoch {epoch+1}. Best validation accuracy: {best_val_acc:.2f}%")
+                break
+
+        # Restore best weights
+        self.weights = best_weights
         np.save("perceptron_weights.npy", self.weights)
 
     def evaluate(self, X, Y):
@@ -78,8 +99,8 @@ class Perceptron:
     def load_weights(self, file_path):
         self.weights = np.load(file_path)
 
-# Initialize and train the perceptron
-perceptron = Perceptron(input_size=1024, learning_rate=0.001, epochs=500)
+# Initialize and train the perceptron with early stopping
+perceptron = Perceptron(input_size=1024, learning_rate=0.001, epochs=500, patience=20)
 perceptron.train(X_train, Y_train, X_val, Y_val)
 
 # -------------------------------
@@ -90,14 +111,14 @@ def moving_average(data, window_size):
     return np.convolve(data, np.ones(window_size) / window_size, mode='valid')
 
 # Define window size for smoothing
-window_size = 50
+window_size = 10  # Reduced window size for better visibility
 
 # Apply moving average to smoothen the accuracy curves
 smoothed_train_acc = moving_average(perceptron.history["train_acc"], window_size)
 smoothed_val_acc = moving_average(perceptron.history["val_acc"], window_size)
 
 # Adjust the range for the x-axis to match the smoothed data
-epochs_range = range(perceptron.epochs - window_size + 1)
+epochs_range = range(len(smoothed_train_acc))
 
 plt.figure(figsize=(7, 5))
 plt.plot(epochs_range, smoothed_train_acc, label="Training Accuracy (Smoothed)", linewidth=4, color='red')
@@ -120,29 +141,25 @@ plt.ylabel("Accuracy (%)")
 plt.title("Training vs Validation Accuracy (Smoothed)")
 plt.legend()
 plt.grid()
-# plt.savefig("image9_perceptron_accuracy.png", dpi=600)
+plt.savefig("image10_rosenblatt.png")
 plt.show()
 
-# Compute Global Mean and Standard Deviation
+# -------------------------------
+# Step 4: Test the Model
+# -------------------------------
+def test_model(image_path):
+    img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+    if img is None:
+        print(f"Image not found at {image_path}")
+        return
 
+    img = cv2.resize(img, (32, 32))
+    img = img.flatten() / 255.0  # Normalize
+    X_test = np.array([img])  # Convert to batch format
+    prediction = perceptron.predict(X_test)
+    class_label = "Dog" if prediction[0] == 1 else "Automobile"
+    print(f"Prediction for {image_path}: {class_label}")
 
-# def test_model(image_path):
-#     # Load image in grayscale
-#     img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
-#     if img is None:
-#         print(f"Image not found at {image_path}")
-#         return
-#     # Resize image to 32x32
-#     img = cv2.resize(img, (32, 32))
-#     # Preprocess: flatten and normalize
-#     img = img.flatten() / 255.0
-#     # Create input batch of shape (1, 1024)
-#     X_test = np.array([img])
-#     # Get prediction from the trained perceptron model
-#     prediction = perceptron.predict(X_test)
-#     # Output the result
-#     class_label = "Dog" if prediction[0] == 1 else "Automobile"
-#     print(f"Prediction for {image_path}: {class_label}")
-# # Test on a sample image (update the path as needed)
-# test_model(r"dog_test.jpeg")
-# test_model(r"car_test.jpg")
+# Test on sample images
+test_model(r"CA2/dog_test.jpeg")
+test_model(r"CA2/car_test.jpg")
