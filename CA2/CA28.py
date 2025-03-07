@@ -7,10 +7,8 @@ import os
 import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader, TensorDataset
 
-# seed = np.random.randint(0, 1000)
 np.random.seed(seed=705)
-# print(f"Using seed: {seed}")
-#74
+
 # -------------------------------
 # Step 1: Load and Normalize Data
 # -------------------------------
