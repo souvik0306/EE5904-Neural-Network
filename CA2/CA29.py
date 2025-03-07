@@ -7,10 +7,10 @@ import os
 import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader, TensorDataset
 
-# seed = np.random.randint(0, 1000)
-np.random.seed(seed=705)
-# print(f"Using seed: {seed}")
-#74
+seed = np.random.randint(0, 1000)
+np.random.seed(seed)
+print(f"Using seed: {seed}")
+#705, 883
 # -------------------------------
 # Step 1: Load and Normalize Data
 # -------------------------------
@@ -96,9 +96,9 @@ print(f"Using device: {device}")
 # Initialize model, loss, and optimizer
 model = MLP().to(device)
 criterion = nn.BCELoss()  # Binary Cross-Entropy Loss
-optimizer = optim.Adam(model.parameters(), lr=0.001, weight_decay=1e-4)
+optimizer = optim.SGD(model.parameters(), lr=0.001, weight_decay=1e-4)  # L2 Regularization
 
-num_epochs = 100
+num_epochs = 300
 patience = 20  # Stop training if no improvement for 10 epochs
 best_val_loss = float("inf")
 patience_counter = 0
@@ -201,8 +201,8 @@ plt.text(x_right, final_val_acc, f'{final_val_acc:.2f}%', color='blue', va='cent
 
 plt.xlabel("Epochs")
 plt.ylabel("Accuracy (%)")
-plt.title("Batch Smoothed Training vs Validation Accuracy")
+plt.title("Sequential Smoothed Training vs Validation Accuracy")
 plt.legend()
 plt.grid()
-plt.savefig("image11_percepton_accuracy.png", dpi=600)
+plt.savefig("image12_sequential_percepton_accuracy.png", dpi=600)
 plt.show()
