@@ -7,9 +7,9 @@ import os
 import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader, TensorDataset
 
-seed = np.random.randint(0, 1000)
-np.random.seed(seed)
-print(f"Using seed: {seed}")
+# seed = np.random.randint(0, 1000)
+np.random.seed(seed=883)
+# print(f"Using seed: {seed}")
 #705, 883
 # -------------------------------
 # Step 1: Load and Normalize Data
@@ -204,5 +204,5 @@ plt.ylabel("Accuracy (%)")
 plt.title("Sequential Smoothed Training vs Validation Accuracy")
 plt.legend()
 plt.grid()
-plt.savefig("image12_sequential_percepton_accuracy.png", dpi=600)
+# plt.savefig("image12_sequential_percepton_accuracy.png", dpi=600)
 plt.show()
