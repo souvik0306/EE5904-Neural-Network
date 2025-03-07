@@ -3,12 +3,9 @@ import numpy as np
 import cv2
 import matplotlib.pyplot as plt
 
-# seed = 18615
-# np.random.seed(seed)
-
-seed = np.random.randint(0, 1000)
+seed = 602
 np.random.seed(seed)
-print(f"Using seed: {seed}")
+
 # -------------------------------
 # Step 1: Load and Preprocess the Data
 # -------------------------------

@@ -3,10 +3,9 @@ import cv2
 import os
 import matplotlib.pyplot as plt
 
-seed = np.random.randint(0, 1000)
+seed = 633
 np.random.seed(seed)
-print(f"Using seed: {seed}")
-#633
+
 # -------------------------------
 # Step 1: Load and Normalize Data
 # -------------------------------
