@@ -72,7 +72,7 @@ class MLP(nn.Module):
         self.batchnorm1 = nn.BatchNorm1d(hidden_size1)
         self.batchnorm2 = nn.BatchNorm1d(hidden_size2)
         self.batchnorm3 = nn.BatchNorm1d(hidden_size3)
-        self.dropout = nn.Dropout(0.4)  # 20% dropout
+        self.dropout = nn.Dropout(0.5)  # 20% dropout
 
     def forward(self, x):
         x = self.relu(self.batchnorm1(self.hidden1(x)))
@@ -94,7 +94,7 @@ print(f"Using device: {device}")
 # Initialize model, loss, and optimizer
 model = MLP().to(device)
 criterion = nn.BCELoss()  # Binary Cross-Entropy Loss
-optimizer = optim.Adam(model.parameters(), lr=0.001, weight_decay=1e-4)
+optimizer = optim.Adam(model.parameters(), lr=0.001, weight_decay=2e-2)
 
 num_epochs = 100
 patience = 20  # Stop training if no improvement for 10 epochs
