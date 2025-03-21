@@ -101,3 +101,44 @@ plt.suptitle("SOM Neuron Weight Visualization", y=1.01)
 plt.savefig("image11_SOM_Weights.png", dpi=600)
 plt.tight_layout()
 plt.show()
+
+# === Predict test set using trained SOM ===
+predictions = []
+
+for x in X_test:
+    dists = np.linalg.norm(weights - x, axis=2)
+    i, j = np.unravel_index(np.argmin(dists), grid_size)
+    label = semantic_class_map[i, j]
+    predictions.append(label)
+
+predictions = np.array(predictions)
+
+# === Filter test labels to only include allowed classes (0, 3, 4) ===
+valid_test_labels = y_test  # Already filtered in c-1
+accuracy = np.mean(predictions == valid_test_labels)
+
+print(f"\nQ2(c-2) SOM Classification Accuracy on Test Set: {accuracy * 100:.2f}%")
+
+import matplotlib.pyplot as plt
+
+# === Visualize test predictions ===
+num_show = 25  # how many test images to show
+indices = np.random.choice(len(X_test), num_show, replace=False)
+
+fig, axes = plt.subplots(5, 5, figsize=(12, 12))
+
+for idx, ax in zip(indices, axes.ravel()):
+    image = X_test[idx].reshape(28, 28)
+    true_label = y_test[idx]
+    pred_label = predictions[idx]
+    correct = (true_label == pred_label)
+
+    ax.imshow(image, cmap='gray')
+    ax.axis('off')
+    ax.set_title(f"True: {true_label}, Pred: {pred_label}\n{'✓' if correct else '✗'}",
+                 fontsize=10, color='green' if correct else 'red')
+
+plt.suptitle("SOM Classification on Test Images", fontsize=16)
+plt.tight_layout(rect=[0, 0, 1, 0.95])
+plt.savefig("image12_SOM_Classification.png", dpi=600)
+plt.show()
