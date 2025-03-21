@@ -62,14 +62,31 @@ for lam in lambda_values:
     thresholds, TrAcc = threshold_sweep(TrPred, TrLabel)
     _, TeAcc = threshold_sweep(TePred, TeLabel)
 
+# Plot collage
+fig, axes = plt.subplots(2, 3, figsize=(18, 10))
+axes = axes.ravel()
+
+for i, lam in enumerate(lambda_values):
+    # Train
+    weights, centers = train_rbf_exact(X_train, TrLabel, sigma, lam)
+    
+    # Predict
+    TrPred = predict_rbf(X_train, centers, weights, sigma)
+    TePred = predict_rbf(X_test, centers, weights, sigma)
+
+    # Threshold sweep
+    thresholds, TrAcc = threshold_sweep(TrPred, TrLabel)
+    _, TeAcc = threshold_sweep(TePred, TeLabel)
+
     # Plot
-    plt.figure(figsize=(8, 4))
-    plt.plot(thresholds, TrAcc, label='Train Accuracy', linestyle='-', color='blue', linewidth=2)
-    plt.plot(thresholds, TeAcc, label='Test Accuracy', linestyle='--', color='red', linewidth=2)
-    plt.xlabel('Threshold')
-    plt.ylabel('Accuracy')
-    plt.title(f'Regularization (lambda = {lam})')
-    plt.legend()
-    plt.grid(True)
-    plt.tight_layout()
-    plt.show()
+    axes[i].plot(thresholds, TrAcc, label='Train Accuracy', linestyle='-', color='blue', linewidth=2)
+    axes[i].plot(thresholds, TeAcc, label='Test Accuracy', linestyle='--', color='red', linewidth=2)
+    axes[i].set_xlabel('Threshold')
+    axes[i].set_ylabel('Accuracy')
+    axes[i].set_title(f'λ = {lam}')
+    axes[i].legend()
+    axes[i].grid(True)
+
+plt.tight_layout()
+plt.savefig("image5_MNIST_Regularization.png", dpi=600)
+plt.show()
