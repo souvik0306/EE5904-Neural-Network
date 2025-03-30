@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from scipy.spatial.distance import cdist
 
 # === 1. Load the data ===
-data = scipy.io.loadmat('CA3/mnist_m.mat')
+data = scipy.io.loadmat('mnist_m.mat')
 
 X_train = data['train_data'] / 255.0    # Normalize like MATLAB
 y_train = data['train_classlabel'].flatten()

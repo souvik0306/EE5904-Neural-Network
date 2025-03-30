@@ -4,7 +4,7 @@ import scipy.io
 from scipy.spatial.distance import cdist
 
 # --- Load data ---
-data = scipy.io.loadmat('CA3/mnist_m.mat')
+data = scipy.io.loadmat('mnist_m.mat')
 X_train_all = data['train_data'] / 255.0
 y_train_all = data['train_classlabel'].flatten()
 X_test_all = data['test_data'] / 255.0

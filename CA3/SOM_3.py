@@ -5,7 +5,7 @@ from scipy.spatial.distance import cdist
 from collections import Counter
 
 # === 1. Load data ===
-data = scipy.io.loadmat('CA3/Digits.mat')
+data = scipy.io.loadmat('Digits.mat')
 X_train_all = data['train_data'].T  # 1000 x 784
 y_train_all = data['train_classlabel'].flatten()
 X_test_all = data['test_data'].T
