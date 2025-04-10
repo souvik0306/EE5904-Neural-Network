@@ -1,0 +1,24 @@
+  SVM_Type       Degree_p      C      Training_Accuracy    Test_Accuracy
+    _____________    ________    _____    _________________    _____________
+
+    "Linear"           "-"       "-"            85.05             86.523    
+    "Hard-Margin"      "2"       "Inf"           99.8             87.044    
+    "Hard-Margin"      "3"       "Inf"          99.85             88.346    
+    "Hard-Margin"      "4"       "Inf"          99.95             87.305    
+    "Hard-Margin"      "5"       "Inf"            100             86.263    
+    "Soft-Margin"      "2"       "0.1"           89.3              90.43    
+    "Soft-Margin"      "2"       "0.6"          92.05             92.578    
+    "Soft-Margin"      "2"       "1.1"          92.65             92.513    
+    "Soft-Margin"      "2"       "2.1"          93.15             92.513    
+    "Soft-Margin"      "3"       "0.1"          90.45             91.211    
+    "Soft-Margin"      "3"       "0.6"          93.15             92.578    
+    "Soft-Margin"      "3"       "1.1"          93.15             92.708    
+    "Soft-Margin"      "3"       "2.1"           93.7             93.034    
+    "Soft-Margin"      "4"       "0.1"          90.95             91.862    
+    "Soft-Margin"      "4"       "0.6"          93.25             92.643    
+    "Soft-Margin"      "4"       "1.1"           93.7             93.034    
+    "Soft-Margin"      "4"       "2.1"          93.95             92.969    
+    "Soft-Margin"      "5"       "0.1"           91.5             92.122    
+    "Soft-Margin"      "5"       "0.6"          93.45             92.969    
+    "Soft-Margin"      "5"       "1.1"             94             93.164    
+    "Soft-Margin"      "5"       "2.1"           94.5             92.708    

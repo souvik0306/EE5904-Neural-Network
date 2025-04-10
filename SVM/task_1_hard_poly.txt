@@ -1,0 +1,12 @@
+Training Accuracy (p=5): 96.50%
+Test Accuracy (p=5): 91.67%
+
+Final Results Table:
+           Training_Accuracy    Test_Accuracy
+           _________________    _____________
+
+    p=2          93.95             92.708    
+    p=3          95.05             92.643    
+    p=4           95.5             92.448    
+    p=5           96.5             91.667    
+

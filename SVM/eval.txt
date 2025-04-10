@@ -1,0 +1,14 @@
+>> print_metrics(eval_predicted, eval_label);
+
+--- Classification Metrics ---
+Accuracy: 91.50%
+Precision: 0.89
+Recall: 0.90
+F1 Score: 0.89
+
+Confusion Matrix:
+True Positive: 214
+True Negative: 335
+False Positive: 26
+False Negative: 25
+>> 
