@@ -10,6 +10,16 @@ y_train = train_label; % 2000x1
 X_test = test_data; % 57x1536
 y_test = test_label; % 1536x1
 
+%% =======================
+% Feature Normalization
+% Normalize each feature (row-wise) using training data stats
+mean_train = mean(X_train, 2);
+std_train = std(X_train, 0, 2) + 1e-8; % small value to avoid division by zero
+
+X_train = (X_train - mean_train) ./ std_train;
+X_test = (X_test - mean_train) ./ std_train; % Use training stats to normalize test set
+%% =======================
+
 %% Set Parameters
 A = [];
 b = [];
@@ -48,10 +58,8 @@ acc_test = Accuracy(wo, bo, X_test, y_test);
 fprintf('Training Accuracy: %.2f%%\n', acc_train * 100);
 fprintf('Test Accuracy: %.2f%%\n', acc_test * 100);
 
-%% Functions
-
-% Accuracy Calculation Function
+%% Accuracy Calculation Function
 function acc = Accuracy(w, b, X, y)
-    predictions = sign(X' * w + b); % Adjust for correct dimensions
+    predictions = sign(X' * w + b);
     acc = sum(predictions == y) / length(y);
 end
