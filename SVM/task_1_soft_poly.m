@@ -1,84 +1,73 @@
-% Soft-Margin SVM with Polynomial Kernel using Quadratic Programming
-clc; clear; close all;
+% Task 1: Soft-Margin SVM with Polynomial Kernel using Quadratic Programming
+clearvars; clc;
 
-%% Load Data
-load('train.mat'); % Training data
-load('test.mat');  % Test data
+fprintf('=== Task 1: Soft-Margin Polynomial SVM Training Only ===\n');
 
-X_train = train_data; % 57x2000
-y_train = train_label; % 2000x1
-X_test = test_data; % 57x1536
-y_test = test_label; % 1536x1
+%% Load Training Data
+fprintf('[1/5] Loading training data...\n');
+load('train.mat'); % train_data: [57x2000], train_label: [2000x1]
+X_train = train_data;
+y_train = train_label;
 
-%% Data Normalization
-X_train = X_train ./ max(abs(X_train), [], 2);
-X_test = X_test ./ max(abs(X_test), [], 2);
+%% Standardization (using training stats only)
+fprintf('[2/5] Standardizing features...\n');
+mean_train = mean(X_train, 2);
+std_train = std(X_train, 0, 2) + 1e-8;
+X_train = (X_train - mean_train) ./ std_train;
 
-%% Parameters
-A = [];
-b = [];
+%% Prepare QP Setup
+n_samples = size(X_train, 2);
+A = []; b = [];
 Aeq = y_train';
 Beq = 0;
-
-n_samples = size(X_train, 2);
 lb = zeros(n_samples, 1);
 f = -ones(n_samples, 1);
 
-% Values for C and p (Adjust based on Table 1)
-C_values = [0.1, 1, 10, 100]; % Example values, update based on Table 1
-degrees = [2, 3, 4, 5];
+% Values for C and p (as per project Table 1)
+C_values = [0.1, 0.6, 1.1, 2.1];
+degrees = [1, 2, 3, 4, 5];
 results = zeros(length(degrees) * length(C_values), 3);
 
 row_index = 1;
 
+%% Start Training
 for i = 1:length(degrees)
     p = degrees(i);
     for j = 1:length(C_values)
         C = C_values(j);
-        fprintf('\nTraining Soft-Margin SVM with Polynomial Kernel (p = %d, C = %.1f)...\n', p, C);
+        fprintf('\n[3/5] Training SVM (p = %d, C = %.1f)...\n', p, C);
         
-        % Polynomial Kernel Calculation
-        K_train = (X_train' * X_train + 1).^p;
-        H_sign = y_train * y_train';
-        H = K_train .* H_sign;
+        % Normalize dot products before applying polynomial kernel
+        dot_prod = X_train' * X_train;
+        dot_prod = dot_prod ./ max(abs(dot_prod(:)));
+        K = (dot_prod + 1).^p;
+        H = (y_train * y_train') .* K;
+        ub = C * ones(n_samples, 1); % Soft margin bounds
 
-        % Update Bounds for Soft-Margin
-        ub = ones(n_samples, 1) * C;
-
-        %% Solve Using Quadratic Programming
-        options = optimset('LargeScale', 'off', 'MaxIter', 10000, 'Display', 'iter');
+        % Solve QP
+        options = optimset('LargeScale', 'off', 'MaxIter', 10000, 'Display', 'off');
         Alpha = quadprog(H, f, A, b, Aeq, Beq, lb, ub, [], options);
 
-        %% Calculate Discriminant Function Parameters
-        % Identify Support Vectors
+        % Support Vectors
         idx = find(Alpha > 1e-4);
 
-        % Compute b using reliable support vectors
-        b_poly = mean(y_train(idx) - sum((Alpha .* y_train) .* K_train(:, idx), 1)');
+        % Compute Bias b
+        b_poly = mean(y_train(idx) - K(idx, :) * (Alpha .* y_train));
 
-        % Polynomial Kernel for Test Data
-        K_test = (X_test' * X_train + 1).^p;
+        % Predict on training data
+        y_pred_train = sign(K * (Alpha .* y_train) + b_poly);
+        acc_train = mean(y_pred_train == y_train) * 100;
 
-        % Predict using the Polynomial Kernel SVM
-        y_train_pred = sign((K_train * (Alpha .* y_train)) + b_poly);
-        y_test_pred = sign((K_test * (Alpha .* y_train)) + b_poly);
-
-        %% Calculate Accuracy
-        acc_train = sum(y_train_pred == y_train) / length(y_train) * 100;
-        acc_test = sum(y_test_pred == y_test) / length(y_test) * 100;
         fprintf('Training Accuracy (p=%d, C=%.1f): %.2f%%\n', p, C, acc_train);
-        fprintf('Test Accuracy (p=%d, C=%.1f): %.2f%%\n', p, C, acc_test);
-        
-        % Store results for table
-        results(row_index, :) = [acc_train, acc_test, C];
+
+        % Store result
+        results(row_index, :) = [p, C, acc_train];
         row_index = row_index + 1;
     end
 end
 
-%% Display Results Table
-fprintf('\nFinal Results Table:\n');
-table_degrees = repelem(degrees', length(C_values));
-table_C = repmat(C_values', length(degrees), 1);
-results_table = table(table_degrees, table_C, results(:, 1), results(:, 2), ...
-    'VariableNames', {'Degree_p', 'C', 'Training_Accuracy', 'Test_Accuracy'});
+%% Display Final Table
+fprintf('\n[5/5] Summary Table (Training Accuracies Only):\n');
+results_table = array2table(results, ...
+    'VariableNames', {'Degree_p', 'C', 'Training_Accuracy'});
 disp(results_table);

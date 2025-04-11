@@ -1,73 +1,65 @@
-% Hard-Margin SVM with Polynomial Kernel using Quadratic Programming (Improved)
-clc; clear; close all;
+% Task 1: Hard-Margin SVM with Polynomial Kernel using Quadratic Programming
+clearvars; clc;
 
-%% Load Data
-load('train.mat'); % Training data
-load('test.mat');  % Test data
+fprintf('=== Task 1: Hard-Margin SVM with Polynomial Kernel ===\n');
 
-X_train = train_data; % 57x2000
-y_train = train_label; % 2000x1
-X_test = test_data; % 57x1536
-y_test = test_label; % 1536x1
+%% Load Training Data
+fprintf('[1/5] Loading training data...\n');
+load('train.mat'); % train_data: [57x2000], train_label: [2000x1]
+X_train = train_data;
+y_train = train_label;
 
-%% Data Normalization
-X_train = X_train ./ max(abs(X_train), [], 2);
-X_test = X_test ./ max(abs(X_test), [], 2);
+%% Feature Standardization (Training Stats Only)
+fprintf('[2/5] Standardizing features...\n');
+mean_train = mean(X_train, 2);
+std_train = std(X_train, 0, 2) + 1e-8;
+X_train = (X_train - mean_train) ./ std_train;
 
-%% Parameters
-A = [];
-b = [];
+%% Setup QP Parameters
+fprintf('[3/5] Preparing QP problem...\n');
+n_samples = size(X_train, 2);
+A = []; b = [];
 Aeq = y_train';
 Beq = 0;
-
-n_samples = size(X_train, 2);
 lb = zeros(n_samples, 1);
-C = 10; % Adjusting for stability
-ub = ones(n_samples, 1) * C;
+C = 1e6; % Hard-margin SVM approximated with large C
+ub = C * ones(n_samples, 1);
 f = -ones(n_samples, 1);
 
-%% Polynomial Kernel Implementation
+%% Polynomial Kernel Loop
 degrees = [2, 3, 4, 5];
-results = zeros(length(degrees), 2);
+results = zeros(length(degrees), 1);
 
 for i = 1:length(degrees)
     p = degrees(i);
-    fprintf('\nTraining Hard-Margin SVM with Polynomial Kernel (p = %d)...\n', p);
+    fprintf('\n[4/5] Training Polynomial Kernel SVM (p = %d)...\n', p);
     
-    % Polynomial Kernel Calculation
-    K_train = (X_train' * X_train + 1).^p;
-    H_sign = y_train * y_train';
-    H = K_train .* H_sign;
+    % Compute Gram Matrix with Polynomial Kernel
+    dot_prod = X_train' * X_train;
+    dot_prod = dot_prod ./ max(abs(dot_prod(:)));  % scale inner products
+    K = (dot_prod + 1).^p;
+    H = (y_train * y_train') .* K;
 
-    %% Solve Using Quadratic Programming
-    options = optimset('LargeScale', 'off', 'MaxIter', 10000, 'Display', 'iter');
+    % Solve QP
+    options = optimset('LargeScale', 'off', 'MaxIter', 10000, 'Display', 'off');
     Alpha = quadprog(H, f, A, b, Aeq, Beq, lb, ub, [], options);
 
-    %% Calculate Discriminant Function Parameters
-    % Identify Support Vectors
+    % Support Vector Detection
     idx = find(Alpha > 1e-3);
 
-    % Compute b using reliable support vectors
-    b_poly = mean(y_train(idx) - sum((Alpha .* y_train) .* K_train(:, idx), 1)');
+    % Compute Bias
+    b_poly = mean(y_train(idx) - K(idx, :) * (Alpha .* y_train));
 
-    % Polynomial Kernel for Test Data
-    K_test = (X_test' * X_train + 1).^p;
+    % Predict on Training Data
+    y_pred_train = sign(K * (Alpha .* y_train) + b_poly);
+    acc_train = mean(y_pred_train == y_train) * 100;
+    fprintf('Training Accuracy (p = %d): %.2f%%\n', p, acc_train);
 
-    % Predict using Polynomial Kernel SVM
-    y_train_pred = sign((K_train * (Alpha .* y_train)) + b_poly);
-    y_test_pred = sign((K_test * (Alpha .* y_train)) + b_poly);
-
-    %% Calculate Accuracy
-    acc_train = sum(y_train_pred == y_train) / length(y_train) * 100;
-    acc_test = sum(y_test_pred == y_test) / length(y_test) * 100;
-    fprintf('Training Accuracy (p=%d): %.2f%%\n', p, acc_train);
-    fprintf('Test Accuracy (p=%d): %.2f%%\n', p, acc_test);
-    
-    % Store results for table
-    results(i, :) = [acc_train, acc_test];
+    results(i) = acc_train;
 end
 
-%% Display Results Table
-fprintf('\nFinal Results Table:\n');
-disp(array2table(results, 'VariableNames', {'Training_Accuracy', 'Test_Accuracy'}, ...
+%% Final Results
+fprintf('\n[5/5] Summary Table (Training Accuracies Only):\n');
+disp(array2table(results, ...
+    'VariableNames', {'Training_Accuracy'}, ...
     'RowNames', {'p=2', 'p=3', 'p=4', 'p=5'}));

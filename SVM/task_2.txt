@@ -1,24 +1,25 @@
-  SVM_Type       Degree_p      C      Training_Accuracy    Test_Accuracy
+Final Classification Results:
+      SVM_Type       Degree_p      C      Training_Accuracy    Test_Accuracy
     _____________    ________    _____    _________________    _____________
 
-    "Linear"           "-"       "-"            85.05             86.523    
-    "Hard-Margin"      "2"       "Inf"           99.8             87.044    
-    "Hard-Margin"      "3"       "Inf"          99.85             88.346    
-    "Hard-Margin"      "4"       "Inf"          99.95             87.305    
-    "Hard-Margin"      "5"       "Inf"            100             86.263    
-    "Soft-Margin"      "2"       "0.1"           89.3              90.43    
-    "Soft-Margin"      "2"       "0.6"          92.05             92.578    
-    "Soft-Margin"      "2"       "1.1"          92.65             92.513    
-    "Soft-Margin"      "2"       "2.1"          93.15             92.513    
-    "Soft-Margin"      "3"       "0.1"          90.45             91.211    
-    "Soft-Margin"      "3"       "0.6"          93.15             92.578    
-    "Soft-Margin"      "3"       "1.1"          93.15             92.708    
-    "Soft-Margin"      "3"       "2.1"           93.7             93.034    
-    "Soft-Margin"      "4"       "0.1"          90.95             91.862    
-    "Soft-Margin"      "4"       "0.6"          93.25             92.643    
-    "Soft-Margin"      "4"       "1.1"           93.7             93.034    
-    "Soft-Margin"      "4"       "2.1"          93.95             92.969    
-    "Soft-Margin"      "5"       "0.1"           91.5             92.122    
-    "Soft-Margin"      "5"       "0.6"          93.45             92.969    
-    "Soft-Margin"      "5"       "1.1"             94             93.164    
-    "Soft-Margin"      "5"       "2.1"           94.5             92.708    
+    "Linear"           "-"       "-"             93.5             93.229    
+    "Hard-Margin"      "2"       "Inf"           99.5             90.169    
+    "Hard-Margin"      "3"       "Inf"           99.6             90.104    
+    "Hard-Margin"      "4"       "Inf"           99.7             89.583    
+    "Hard-Margin"      "5"       "Inf"          99.75             88.542    
+    "Soft-Margin"      "2"       "0.1"           87.3             87.305    
+    "Soft-Margin"      "2"       "0.6"          90.05             91.602    
+    "Soft-Margin"      "2"       "1.1"           90.7             92.253    
+    "Soft-Margin"      "2"       "2.1"          91.15             92.513    
+    "Soft-Margin"      "3"       "0.1"          88.25             88.411    
+    "Soft-Margin"      "3"       "0.6"           90.6             92.253    
+    "Soft-Margin"      "3"       "1.1"          91.05             92.383    
+    "Soft-Margin"      "3"       "2.1"          91.45             92.904    
+    "Soft-Margin"      "4"       "0.1"          88.55             89.323    
+    "Soft-Margin"      "4"       "0.6"          90.85             92.448    
+    "Soft-Margin"      "4"       "1.1"          91.35             92.578    
+    "Soft-Margin"      "4"       "2.1"           92.5             93.229    
+    "Soft-Margin"      "5"       "0.1"           88.9             89.974    
+    "Soft-Margin"      "5"       "0.6"           91.1             92.318    
+    "Soft-Margin"      "5"       "1.1"          91.55             92.839    
+    "Soft-Margin"      "5"       "2.1"           92.5              93.49    
