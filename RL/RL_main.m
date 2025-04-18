@@ -1,8 +1,3 @@
-clc; clear; close all;
-
-% -------------------------------
-% Load reward matrix from Task 2
-% -------------------------------
 load('qeval.mat');  % contains qevalreward
 reward = qevalreward;
 [num_state, num_action] = size(reward);
