@@ -1,13 +1,14 @@
+Best model: C = 10.00, gamma = 0.001, F1 = 0.9057
 Evaluation complete. Output: eval_predicted [600 x 1]
 
 --- Classification Metrics ---
-Accuracy: 92.00%
-Precision: 0.92
-Recall: 0.86
-F1 Score: 0.89
+Accuracy: 93.17%
+Precision: 0.91
+Recall: 0.91
+F1 Score: 0.91
 
 Confusion Matrix:
-True Positive: 196
-True Negative: 356
-False Positive: 16
-False Negative: 32
+True Positive: 207
+True Negative: 352
+False Positive: 20
+False Negative: 21
