@@ -1,69 +1,92 @@
-% svm_main.m - Task 3: Predict eval_predicted using best polynomial SVM
+% Task 3: SVM with Gaussian (RBF) Kernel and Class Weighting for Best Performance
+rng(42); % Reproducibility
 
-% seed for reproducibility
-rng(42);  % Any fixed integer seed ensures consistent behavior
-
-% Load training data
+%% Load Data
 load('train.mat'); % train_data [57x2000], train_label [2000x1]
-X_train = train_data;
+load('eval.mat');  % eval_data [57x600]
+X_train = train_data';
 y_train = train_label;
+X_eval = eval_data';
 
-% Load evaluation data
-load('eval.mat'); % eval_data [57x600]
-X_eval = eval_data;
+%% Normalize Features
+mu = mean(X_train);
+sigma = std(X_train) + 1e-8;
+X_train = (X_train - mu) ./ sigma;
+X_eval  = (X_eval  - mu) ./ sigma;
 
-% === Standardize using training statistics ===
-mean_train = mean(X_train, 2);
-std_train = std(X_train, 0, 2) + 1e-8;
-X_train = (X_train - mean_train) ./ std_train;
-X_eval  = (X_eval  - mean_train) ./ std_train;
+%% Define Grid for Hyperparameter Search
+C_values = [0.1, 1, 10, 100];
+gamma_values = [0.001, 0.01, 0.1, 1];
+best_f1 = -inf;
 
-% === Polynomial Kernel Parameters ===
-p = 5;         % Polynomial degree
-C = 2.1;       % Soft-margin regularization parameter
+for C = C_values
+    for gamma = gamma_values
+        f1_scores = [];
+        cv = cvpartition(y_train, 'KFold', 5);
 
-% === Compute Normalized Polynomial Kernel (Train) ===
-dot_prod = X_train' * X_train;
-dot_prod = dot_prod ./ max(abs(dot_prod(:)));  % Normalize for numerical stability
-K_train = (dot_prod + 1).^p;
+        for i = 1:cv.NumTestSets
+            idx_train = training(cv, i);
+            idx_val = test(cv, i);
 
-% === QP Setup ===
-n = size(X_train, 2);
-H = (y_train * y_train') .* K_train;
-f = -ones(n, 1);
-Aeq = y_train';
-beq = 0;
-lb = zeros(n, 1);
-ub = C * ones(n, 1);
-options = optimset('LargeScale', 'off', 'MaxIter', 10000, 'Display', 'off');
+            model = fitcsvm(X_train(idx_train, :), y_train(idx_train), ...
+                'KernelFunction', 'rbf', ...
+                'KernelScale', 1/sqrt(2*gamma), ...
+                'BoxConstraint', C, ...
+                'Standardize', false, ...
+                'ClassNames', [-1, 1], ...
+                'Weights', get_class_weights(y_train(idx_train)));
 
-% Check for singularity
-if rcond(H) < 1e-12
-    warning('Kernel matrix H is nearly singular. Consider scaling or adjusting kernel.');
+            [pred, score] = predict(model, X_train(idx_val, :));
+            [~, ~, ~, f1] = compute_metrics(y_train(idx_val), pred);
+            f1_scores(end+1) = f1;
+        end
+
+        mean_f1 = mean(f1_scores);
+        if mean_f1 > best_f1
+            best_f1 = mean_f1;
+            best_model = model;
+            best_C = C;
+            best_gamma = gamma;
+        end
+    end
 end
 
-% === Solve QP ===
-Alpha = quadprog(H, f, [], [], Aeq, beq, lb, ub, [], options);
+fprintf('Best model: C = %.2f, gamma = %.3f, F1 = %.4f\n', best_C, best_gamma, best_f1);
 
-% === Compute Bias (Only use SVs within margin) ===
-tolerance = 1e-4;
-idx_margin = find(Alpha > tolerance & Alpha < C - tolerance);
+%% Retrain Best Model on Full Data
+final_model = fitcsvm(X_train, y_train, ...
+    'KernelFunction', 'rbf', ...
+    'KernelScale', 1/sqrt(2*best_gamma), ...
+    'BoxConstraint', best_C, ...
+    'Standardize', false, ...
+    'ClassNames', [-1, 1], ...
+    'Weights', get_class_weights(y_train));
 
-if isempty(idx_margin)
-    warning('No support vectors inside the margin. Bias will use all SVs.');
-    idx_margin = find(Alpha > tolerance);  % fallback to all SVs
-end
-
-b = mean(y_train(idx_margin) - K_train(idx_margin, :) * (Alpha .* y_train));
-
-% === Compute Normalized Polynomial Kernel (Eval) ===
-dot_prod_eval = X_eval' * X_train;
-dot_prod_eval = dot_prod_eval ./ max(abs(dot_prod_eval(:)));  % Normalize eval kernel only
-K_eval = (dot_prod_eval + 1).^p;
-
-% === Predict ===
-eval_predicted = sign(K_eval * (Alpha .* y_train) + b);
-eval_predicted(eval_predicted == 0) = 1;  % handle sign(0) case
-eval_predicted = eval_predicted(:);      % ensure column vector [600 x 1]
+%% Predict on Eval
+eval_predicted = predict(final_model, X_eval);
+eval_predicted = eval_predicted(:); % ensure column vector
 
 fprintf('Evaluation complete. Output: eval_predicted [%d x 1]\n', length(eval_predicted));
+
+%% --- Helper Functions ---
+
+function W = get_class_weights(y)
+    % Balanced class weights to improve recall
+    n_pos = sum(y == 1);
+    n_neg = sum(y == -1);
+    W = ones(size(y));
+    W(y == 1) = 0.5 / n_pos;
+    W(y == -1) = 0.5 / n_neg;
+end
+
+function [acc, prec, rec, f1] = compute_metrics(y_true, y_pred)
+    tp = sum(y_true == 1 & y_pred == 1);
+    tn = sum(y_true == -1 & y_pred == -1);
+    fp = sum(y_true == -1 & y_pred == 1);
+    fn = sum(y_true == 1 & y_pred == -1);
+
+    acc = (tp + tn) / length(y_true);
+    prec = tp / (tp + fp + eps);
+    rec = tp / (tp + fn + eps);
+    f1 = 2 * prec * rec / (prec + rec + eps);
+end
