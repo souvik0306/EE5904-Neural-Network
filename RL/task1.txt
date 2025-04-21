@@ -1,0 +1,105 @@
+>> RL_task1
+
+[INFO] γ = 0.5 | ε-type = 1
+  → Run  1/10
+  → Run  2/10
+  → Run  3/10
+  → Run  4/10
+  → Run  5/10
+  → Run  6/10
+  → Run  7/10
+  → Run  8/10
+  → Run  9/10
+  → Run 10/10
+[RESULT] Reached goal in 0/10 runs | Best reward = -Inf
+
+[INFO] γ = 0.9 | ε-type = 1
+  → Run  1/10
+  → Run  2/10
+  → Run  3/10
+  → Run  4/10
+  → Run  5/10
+  → Run  6/10
+  → Run  7/10
+  → Run  8/10
+  → Run  9/10
+  → Run 10/10
+[RESULT] Reached goal in 0/10 runs | Best reward = -Inf
+
+[INFO] γ = 0.5 | ε-type = 2
+  → Run  1/10
+  → Run  2/10
+  → Run  3/10
+  → Run  4/10
+  → Run  5/10
+  → Run  6/10
+  → Run  7/10
+  → Run  8/10
+  → Run  9/10
+  → Run 10/10
+[RESULT] Reached goal in 0/10 runs | Best reward = -Inf
+
+[INFO] γ = 0.9 | ε-type = 2
+  → Run  1/10
+  → Run  2/10
+  → Run  3/10
+  → Run  4/10
+  → Run  5/10
+  → Run  6/10
+  → Run  7/10
+  → Run  8/10
+  → Run  9/10
+  → Run 10/10
+[RESULT] Reached goal in 10/10 runs | Best reward = 2085.85
+
+[INFO] γ = 0.5 | ε-type = 3
+  → Run  1/10
+  → Run  2/10
+  → Run  3/10
+  → Run  4/10
+  → Run  5/10
+  → Run  6/10
+  → Run  7/10
+  → Run  8/10
+  → Run  9/10
+  → Run 10/10
+[RESULT] Reached goal in 0/10 runs | Best reward = -Inf
+
+[INFO] γ = 0.9 | ε-type = 3
+  → Run  1/10
+  → Run  2/10
+  → Run  3/10
+  → Run  4/10
+  → Run  5/10
+  → Run  6/10
+  → Run  7/10
+  → Run  8/10
+  → Run  9/10
+  → Run 10/10
+[RESULT] Reached goal in 0/10 runs | Best reward = -Inf
+
+[INFO] γ = 0.5 | ε-type = 4
+  → Run  1/10
+  → Run  2/10
+  → Run  3/10
+  → Run  4/10
+  → Run  5/10
+  → Run  6/10
+  → Run  7/10
+  → Run  8/10
+  → Run  9/10
+  → Run 10/10
+[RESULT] Reached goal in 0/10 runs | Best reward = -Inf
+
+[INFO] γ = 0.9 | ε-type = 4
+  → Run  1/10
+  → Run  2/10
+  → Run  3/10
+  → Run  4/10
+  → Run  5/10
+  → Run  6/10
+  → Run  7/10
+  → Run  8/10
+  → Run  9/10
+  → Run 10/10
+[RESULT] Reached goal in 9/10 runs | Best reward = 2085.85
