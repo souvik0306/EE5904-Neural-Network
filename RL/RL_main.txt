@@ -1,0 +1,43 @@
+>> RL_main
+Run 1/10
+Converged.
+Reached end state.
+Run 2/10
+Converged.
+Did not reach end state.
+Run 3/10
+Converged.
+Did not reach end state.
+Run 4/10
+Converged.
+Reached end state.
+Run 5/10
+Converged.
+Reached end state.
+Run 6/10
+Converged.
+Did not reach end state.
+Run 7/10
+Converged.
+Did not reach end state.
+Run 8/10
+Converged.
+Reached end state.
+Run 9/10
+Converged.
+Did not reach end state.
+Run 10/10
+Converged.
+Reached end state.
+
+Max reward achieved: 3811.13
+Reached goal in 5/10 runs
+Average time per successful run: 2.408s
+States visited:
+  Columns 1 through 17
+
+     1    11    21    22    23    33    43    44    45    46    47    57    67    77    78    79    89
+
+  Columns 18 through 19
+
+    99   100
