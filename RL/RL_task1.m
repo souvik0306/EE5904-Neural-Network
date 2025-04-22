@@ -1,4 +1,3 @@
-
 % Load reward matrix
 load('task1.mat');
 
